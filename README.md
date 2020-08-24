@@ -5,4 +5,6 @@ make sure to use the cd command to be in the projects root directory (where the 
 NOTE: pip or pip3 must be installed.
 https://pypi.org
 
+```bash
 pip install -r requirements.txt
+```
