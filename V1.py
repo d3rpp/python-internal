@@ -87,9 +87,11 @@ def getIntegerInput(question:str = "") -> int:
             tmp = int(input(question))
             if tmp == "":
                 return 0
+            elif tmp < 1:
+                raise ValueError
             return tmp
         except ValueError:
-            print("Sorry, but that is not a number. please use the digits (0 - 9)")
+            print("Sorry, but that is not a valid number. please use the digits (0 - 9)")
             sleep(1)
             input()
             continue
@@ -115,12 +117,16 @@ def getYesOrNo(question:str = "") -> bool:
     while True:
         clear()
         a:str = input(f"{question} (Y/N) ")
-        if a[0] == 'y' or a[0] == 'Y':
-            return True
-        elif a[0] == 'n' or a[0] == 'N':
-            return False
-        else:
+        try:
+            if a[0] == 'y' or a[0] == 'Y':
+                return True
+            elif a[0] == 'n' or a[0] == 'N':
+                return False
+            else:
+                print("Please type either \"Y\" for yes or \"N\" for no")
+        except IndexError:
             print("Please type either \"Y\" for yes or \"N\" for no")
+
 #endregion
 
 #region PLAYER CLASS
@@ -129,10 +135,10 @@ class Player:
     scores:[int]
     teamName:str
 
-    def __init__(self, _name:str, _teamName:str):
-        self.playerName = _name
-        self.scores = []
-        self.teamName = _teamName
+    def __init__(self, name:str = "NONAME", teamName:str = "NOTEAM"):
+        self.playerName:str = name
+        self.scores:[int] = []
+        self.teamName:str = teamName
 
     def getScores(self) -> [int]:
         return self.scores
@@ -143,23 +149,15 @@ class Player:
             tmp += i
         return tmp
 
-    # use RACE NUMBER NOT ARRAY INDEX
-    def addScore(self, index:int, score:int) -> bool:
-        """
-        USE RACE NUMBER NOT ARRAY INDEX
-        """
-        try:
-            self.scores[index - 1] = score
-            return True
-        except IndexError:
-            print("An Error has Occured, internally")
-            return False
-        except Exception:
-            print("An Unknown Error has Occured")
-            return False
-
-    def GetName(self) -> str:
+    def getName(self) -> str:
         return self.playerName
+
+    def getTeamName(self) -> str:
+        return self.teamName
+
+    def addScore(self, score:int) -> None:
+        self.scores.append(score)
+            
         
 #endregion
 
@@ -195,10 +193,13 @@ class Race:
     teams:[Team]
 
     def __init__(self):
-        pass
+        self.teams = []
 
     def SortTeamsByScores(self) -> [Team]:
         sortTeamsInRace(self.teams)
+
+    def insertTeam(self, team:Team) -> None:
+        self.teams.append(team)
 
 #endregion
 
@@ -216,16 +217,16 @@ def sortPlayersInTeam(players:[Player]) -> [Player]:
             # swap them
             if (tmp[j].getScoreSum() < tmp[j+1].getScoreSum()):
                 print(f'[Swap Sort] {tmp[j].getScoreSum()} < {tmp[j+1].getScoreSum()} --- Switching')
-                sleep(0.25)
+                sleep(0.1)
                 clear()
                 tmp[j], tmp[j+1] = tmp[j+1], tmp[j]
             else:
                 print(f'[Swap Sort] {tmp[j].getScoreSum()} > {tmp[j+1].getScoreSum()} --- Not Switching')
-                sleep(0.25)
+                sleep(0.1)
                 clear()
-    print("SORTED\n")
     return tmp
 
+# this is far from memory efficient and will not scale well
 
 def sortTeamsInRace(teams:[Team]) -> [Team]:
     n:int = len(teams)
@@ -242,7 +243,6 @@ def sortTeamsInRace(teams:[Team]) -> [Team]:
                 print(f'[Swap Sort] {tmp[j].getTeamScoreSum()} < {tmp[j+1].getTeamScoreSum()} --- Switching')
                 sleep(0.25)
                 clear()
-    print("SORTED\n")
     return tmp
 
 #endregion
@@ -270,6 +270,7 @@ def INIT():
     clear()
     raceNameTMP = getStringInput("What is this race called? ")
     RACE.raceName = raceNameTMP
+    clear()
     print(f"Nice! lets get teams setup for {raceNameTMP}")
     sleep(2)
     del raceNameTMP
@@ -278,14 +279,12 @@ def INIT():
     # Init Teams
     while True:
         teamName: str
-
-        clear()
         print(f"What is team {i} being called?")
         print(f"try something like \"Fast Awesome Racing Team\"")
         teamName = getStringInput()
 
-        j:int = 1
-        TMPPlayers: [Player] = [Player]
+        j:int = 1 
+        TMPPlayers: [Player] = []
         while True:
             print(f"\nWhat is the name of Racer {j}")
             TMPName = getStringInput()
@@ -295,7 +294,7 @@ def INIT():
             else:
                 j+=1
         
-        RACE.teams.append(Team(TMPPlayers, teamName))
+        RACE.insertTeam(Team(TMPPlayers, teamName))
 
         if not getYesOrNo("Is there another Team in this race?"):
             break
@@ -343,14 +342,21 @@ def mainLoop() -> None:
     del t
 
     # dont judge me for using threads
+    # please
 
-    print('Race Completed! \nLets get the Results!\n')
+    print('Ready to Receive input')
     sleep(2)
 
-    for i in RACE.teams:
-        for j in i.players:
-            print(f'What was the final place for {j.playerName}\nIf they did compete, just leave this blank')
-            ans:int = getIntegerInput("> ")
+    for i in RACE.teams.copy():
+        for j in i.players.copy():
+            # i = Team
+            # j = Player in team
+
+            # BUG: This refuses to get the name of j
+            name:str = j.getName()
+            team:str = j.getTeamName()
+            q:str = (f'What was the final place for {name}, ({team})\nIf they didn\'t compete, just leave this blank\n> ')
+            ans:int = getIntegerInput(q)
             tmp:int
             if ans == 1:
                 tmp = 5
@@ -360,29 +366,26 @@ def mainLoop() -> None:
                 tmp = 1
             else:
                 tmp = 0
-            j.scores.append(tmp)
+            j.addScore(tmp)
 
 #endregion
 
 
 #region PRINT
-def printFinalOutput(raceNumber) -> None:
-    for i in RACE.teams:
-        i=sortPlayersInTeam(i)
-    
-    RACE.teams = sortTeamsInRace(RACE.teams)
+def printFinalOutput() -> None:
+# cant remember why is sorted the teams
 
     fullPlayerList:[Player] = []
     for i in RACE.teams:
-        for j in i:
+        for j in i.players:
             fullPlayerList.append(j)
 
     fullPlayerListSORTED:[Player] =  sortPlayersInTeam(fullPlayerList)
 
-    fullPlayerListSORTED_FOR_PRINTING = [["Name", "Team", "Score"]]
+    fullPlayerListSORTED_FOR_PRINTING = [["Place","Name", "Team", "Score"]]
 
-    for i in fullPlayerListSORTED:
-        fullPlayerListSORTED_FOR_PRINTING.append([i.name, i.teamName, i.getScoreSum()])
+    for i in range(len(fullPlayerListSORTED)):
+        fullPlayerListSORTED_FOR_PRINTING.append([i+1,fullPlayerListSORTED[i].getName(), fullPlayerListSORTED[i].getTeamName(), fullPlayerListSORTED[i].getScoreSum()])
 
     tablified = tabulate(fullPlayerListSORTED_FOR_PRINTING, headers="firstrow")
     clear(True)
@@ -427,11 +430,18 @@ def main() -> int:
 
     INIT()
 
-    for i in range(RACE.raceCount):
-        mainLoop(i)
-        printFinalOutput(i-1)
-        print("hit \"Enter\" to Continue")
+    # i for iteration
+    i:int = 1
+
+    while True:
+        mainLoop()
+        printFinalOutput()
         input()
+        if getYesOrNo("are these teams racing again?\n"):
+            continue
+        else:
+            break
+    
 
     # TODO: PRINT OUTPUT
 
