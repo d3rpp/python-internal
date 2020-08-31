@@ -286,7 +286,8 @@ def INIT():
         j:int = 1 
         TMPPlayers: [Player] = []
         while True:
-            print(f"\nWhat is the name of Racer {j}")
+            clear()
+            print(f"\nWhat is the name of Racer {j} in {teamName}")
             TMPName = getStringInput()
             TMPPlayers.append(Player(TMPName, teamName))
             if not getYesOrNo(f"Is there another Racer on team {teamName}?"):
@@ -308,6 +309,7 @@ def INIT():
 #TODO: IMPLEMENT MAINLOOP FUNCTIONALITY
 # 'tis a chonky boi
 def mainLoop() -> None:
+    input("Hit [Return] to begin")
     clear(False)
     print(f"Starting Race in")
     sleep(1)
@@ -373,10 +375,10 @@ def mainLoop() -> None:
 
 #region PRINT
 def printFinalOutput() -> None:
-# cant remember why is sorted the teams
+    fullTeamList = RACE.SortTeamsByScores()
 
     fullPlayerList:[Player] = []
-    for i in RACE.teams:
+    for i in fullTeamList:
         for j in i.players:
             fullPlayerList.append(j)
 
