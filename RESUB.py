@@ -1,7 +1,12 @@
 
 # Hudson Curren - 2.7 Internal Assesment
-# Version 3
-# UNTESTED INIT FUNCTION IMPLEMENTED
+# Version 9
+
+# TODO: Not Accepting "" for placing
+# TODO: ON FINAL PLACING, PROGRAM CRASHES
+# TODO: PLACE FUNCTION COMMENTS UNDER DEFINITION
+# TODO: Add Commenting
+# TODO: "Calculations showing tally"
 
 # TEXT GENERATOR: https://fsymbols.com/generators/blocky/
 
@@ -19,10 +24,30 @@ from time import sleep
 import threading
 
 # allows saving to JSON file. along with importing  
-import json
+# import json
 
-# importing pretty printing table program, DOWNLOADED FROM INTERNET
-from tabulate import tabulate
+# TABULATE
+# Copyright (c) 2011-2020 Sergey Astanin and contributors
+
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+import tabulate
 
 from random import randint
 #region GLOBALS
@@ -130,13 +155,13 @@ def getYesOrNo(question:str = "") -> bool:
 #endregion
 
 #region PLAYER CLASS
-class Player:
-    playerName:str
+class Rider:
+    riderName:str
     scores:[int]
     teamName:str
 
     def __init__(self, name:str = "NONAME", teamName:str = "NOTEAM"):
-        self.playerName:str = name
+        self.riderName:str = name
         self.scores:[int] = []
         self.teamName:str = teamName
 
@@ -150,7 +175,7 @@ class Player:
         return tmp
 
     def getName(self) -> str:
-        return self.playerName
+        return self.riderName
 
     def getTeamName(self) -> str:
         return self.teamName
@@ -170,15 +195,15 @@ class Team:
     """
 
     teamName:str
-    players:[Player]
+    rider:[Rider]
 
-    def __init__(self, _players:[Player], _teamName:str=""):
+    def __init__(self, _players:[Rider], _teamName:str=""):
         self.teamName  = _teamName
-        self.players = _players
+        self.rider = _players
     
     def getTeamScoreSum(self):
         tmp:int = 0
-        for i in self.players:
+        for i in self.rider:
             tmp += i.getScoreSum()
 
 #endregion
@@ -204,11 +229,11 @@ class Race:
 #endregion
 
 #region Sorting Algorithms
-def sortPlayersInTeam(players:[Player]) -> [Player]:
-    n:int = len(players)
+def sortPlayersInTeam(riders:[Rider]) -> [Rider]:
+    n:int = len(riders)
     # using copy otherwise python automatically passes a reference, 
     # meaning we directly edit the object
-    tmp:[Player] = players.copy()
+    tmp:[Rider] = riders.copy()
     # for each element in array
     for i in range(n-1):
         # previous element are already in place
@@ -284,12 +309,12 @@ def INIT():
         teamName = getStringInput()
 
         j:int = 1 
-        TMPPlayers: [Player] = []
+        TMPPlayers: [Rider] = []
         while True:
             clear()
             print(f"\nWhat is the name of Racer {j} in {teamName}")
             TMPName = getStringInput()
-            TMPPlayers.append(Player(TMPName, teamName))
+            TMPPlayers.append(Rider(TMPName, teamName))
             if not getYesOrNo(f"Is there another Racer on team {teamName}?"):
                 break
             else:
@@ -377,12 +402,12 @@ def mainLoop() -> None:
 def printFinalOutput() -> None:
     fullTeamList = RACE.SortTeamsByScores()
 
-    fullPlayerList:[Player] = []
+    fullPlayerList:[Rider] = []
     for i in fullTeamList:
         for j in i.players:
             fullPlayerList.append(j)
 
-    fullPlayerListSORTED:[Player] =  sortPlayersInTeam(fullPlayerList)
+    fullPlayerListSORTED:[Rider] =  sortPlayersInTeam(fullPlayerList)
 
     fullPlayerListSORTED_FOR_PRINTING = [["Place","Name", "Team", "Score"]]
 
@@ -452,7 +477,9 @@ def main() -> int:
     return 0
 
 # EXITS THE PROGRAM WITH A SPECIFIED CODE
-sys.exit(main())
+if __name__ == "__main__":
+    sys.exit(main())
+
 # main functions commented out for now, to test algorithms
 # if im being honest, adding the return 0 to the main function gives this more of a c++ kinda vibe
 # it makes me feel more comfortable doing this.
